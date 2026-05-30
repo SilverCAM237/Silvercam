@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SilverCAM — Le futur du recrutement</title>
+<title>SilverCAM — Recrutement de talents vérifiés au Cameroun</title>
+<meta name="description" content="SilverCAM aide les entreprises au Cameroun à recruter des jeunes talents vérifiés : CV, diplôme, WhatsApp, test de compétences, contact direct et paiement au succès."/>
+<meta name="keywords" content="emploi Cameroun, recrutement Cameroun, talents vérifiés, offres emploi Douala, offres emploi Yaoundé, CV vérifié, SilverCAM"/>
+<meta name="theme-color" content="#2E7D32"/>
+<meta property="og:title" content="SilverCAM — Talents vérifiés au Cameroun"/>
+<meta property="og:description" content="Recrutez plus vite avec des profils vérifiés, des tests de compétences et un contact direct WhatsApp."/>
+<meta property="og:type" content="website"/>
+<meta property="og:locale" content="fr_CM"/>
 <!-- Firebase SDK core and Realtime Database -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -917,6 +924,20 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
 .pin-key.del:hover{background:var(--red);color:#fff}
 .pin-setup-label{font-size:13px;color:var(--gr);text-align:center;margin-top:8px;line-height:1.6}
 @keyframes pinShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+
+/* ─── Sections de crédibilité ajoutées ─── */
+.trust-strip{background:#fff;border-bottom:1px solid var(--bdr);box-shadow:0 8px 26px rgba(13,27,20,.04)}
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:18px 0}
+.trust-item{display:flex;gap:10px;align-items:flex-start;background:linear-gradient(135deg,var(--wh),#fff);border:1px solid var(--bdr);border-radius:14px;padding:13px 14px}
+.trust-item b{display:block;font-size:13px;color:var(--dk);margin-bottom:2px}.trust-item span{font-size:12px;color:var(--gr);line-height:1.45}
+.section-how{background:linear-gradient(180deg,#fff,#f3fbf4);padding:58px 0;position:relative;overflow:hidden}
+.section-how::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--g),var(--gold),var(--g));background-size:200%;animation:gradShift 3s linear infinite}
+.step-card{position:relative;padding-left:72px;min-height:132px}.step-num{position:absolute;left:18px;top:20px;width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--gold));color:#fff;font-family:Fraunces;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(46,125,50,.2)}
+.proof-section{background:linear-gradient(145deg,#071a0c,#0D1B14);padding:56px 0;color:#fff;position:relative;overflow:hidden}.proof-section .tg{color:rgba(255,255,255,.7)!important}.proof-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:22px;backdrop-filter:blur(10px)}
+.faq-home{background:#fff;padding:56px 0}.faq-home details{border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;background:var(--wh);margin-bottom:10px}.faq-home summary{cursor:pointer;font-weight:700;color:var(--dk)}.faq-home details p{margin-top:10px;color:var(--gr);font-size:13px;line-height:1.65}
+@media(max-width:480px){.step-card{padding-left:58px}.step-num{left:14px}}
+
 </style>
 </head>
 <body>
@@ -932,6 +953,7 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
     <button class="nlnk" onclick="G('home')">Accueil</button>
     <button class="nlnk" onclick="G('jobs')">Offres</button>
     <button class="nlnk" onclick="G('candidates')">Talents</button>
+    <button class="nlnk" onclick="scrollHomeSection('how')">Fonctionnement</button>
     <button class="nlnk" onclick="G('pricing')">Tarifs</button>
     <div id="nav-g" class="fx gap8">
       <button class="btn btn-ghost btn-sm" onclick="G('login')">Connexion</button>
@@ -1026,10 +1048,10 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
     </div>
 
     <div class="fu" style="animation-delay:.1s">
-      <div class="hero-tag" style="animation:badgeFloat 2.5s ease-in-out .5s infinite">🇨🇲 La plateforme de recrutement #1 au Cameroun</div>
+      <div class="hero-tag" style="animation:badgeFloat 2.5s ease-in-out .5s infinite">🇨🇲 Plateforme camerounaise de recrutement vérifié</div>
     </div>
     <h1 class="hero-h1 fu" style="animation-delay:.25s">Recrutez des jeunes <span>réellement compétents</span></h1>
-    <p class="hero-sub fu" style="animation-delay:.45s">Fini les faux CV et les candidats fantômes. Diplômés vérifiés, contact direct, résultats garantis.</p>
+    <p class="hero-sub fu" style="animation-delay:.45s">Réduisez les faux CV, gagnez du temps et contactez directement des candidats dont les informations clés sont contrôlées.</p>
     <div class="sbar fu" style="animation-delay:.6s;transition:box-shadow .2s ease">
       <input id="hs" placeholder="Poste, compétence, ville…" onkeydown="if(event.key==='Enter')G('jobs')" onfocus="this.closest('.sbar').style.boxShadow='0 8px 36px rgba(46,125,50,.35)'" onblur="this.closest('.sbar').style.boxShadow='0 8px 36px rgba(0,0,0,.28)'"/>
       <button class="btn btn-primary" onclick="G('jobs')">🔍 Chercher</button>
@@ -1045,6 +1067,18 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
     </div>
   </div>
 
+  <!-- Crédibilité / confiance -->
+  <div class="trust-strip">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-item"><div>🔎</div><div><b>Transparence totale</b><span>Les compteurs affichent les vraies données de la plateforme.</span></div></div>
+        <div class="trust-item"><div>📱</div><div><b>Adapté au Cameroun</b><span>WhatsApp, Mobile Money et villes locales intégrés.</span></div></div>
+        <div class="trust-item"><div>🛡️</div><div><b>Profils contrôlés</b><span>CV, diplôme et numéro WhatsApp requis avant visibilité.</span></div></div>
+        <div class="trust-item"><div>🤝</div><div><b>Paiement au succès</b><span>Les entreprises peuvent publier sans avance et payer après recrutement.</span></div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Différenciateurs -->
   <div class="section-feat" style="padding:56px 0">
     <div class="sf-orb1"></div>
@@ -1054,8 +1088,8 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
       <div class="g4">
         <div class="card reveal" style="transition-delay:.05s">
           <div style="font-size:30px;margin-bottom:10px;animation:wiggle 3s ease-in-out 2s infinite">✅</div>
-          <div class="fw7 mb8" style="font-size:15px">Profils 100% vérifiés</div>
-          <div class="tg sm" style="line-height:1.6">CNI, diplôme scanné, WhatsApp validé. Aucun faux CV.</div>
+          <div class="fw7 mb8" style="font-size:15px">Profils contrôlés</div>
+          <div class="tg sm" style="line-height:1.6">Diplôme, CV et WhatsApp vérifiés avant publication du profil candidat.</div>
         </div>
         <div class="card reveal" style="transition-delay:.12s">
           <div style="font-size:30px;margin-bottom:10px;animation:float 3s ease-in-out 1s infinite">⚡</div>
@@ -1077,6 +1111,22 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
   </div>
 
 
+
+  <!-- Comment ça marche -->
+  <div class="section-how" id="home-how">
+    <div class="container" style="position:relative;z-index:1">
+      <div class="tc mb32">
+        <span class="badge badge-gold" style="font-size:12px">Simple · Vérifié · Direct</span>
+        <h2 class="serif fw7 section-title-g" style="font-size:28px;margin-top:10px;margin-bottom:8px">Comment fonctionne SilverCAM ?</h2>
+        <p class="tg" style="max-width:620px;margin:0 auto;line-height:1.7">Une seule page, deux parcours : les candidats construisent un profil fiable, les entreprises publient et contactent les talents qualifiés.</p>
+      </div>
+      <div class="g3">
+        <div class="card step-card reveal"><div class="step-num">1</div><div class="fw7 mb8">Créer un compte</div><div class="tg sm" style="line-height:1.7">Candidat ou entreprise : inscription gratuite, ville, secteur, WhatsApp et informations essentielles.</div></div>
+        <div class="card step-card reveal"><div class="step-num">2</div><div class="fw7 mb8">Vérifier / publier</div><div class="tg sm" style="line-height:1.7">Le candidat valide son CV et son diplôme. L’entreprise publie une offre claire avec compétences, salaire et type de contrat.</div></div>
+        <div class="card step-card reveal"><div class="step-num">3</div><div class="fw7 mb8">Matcher et contacter</div><div class="tg sm" style="line-height:1.7">Les recruteurs filtrent par secteur, ville, score et contactent directement via WhatsApp, email ou appel.</div></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Secteurs -->
   <div class="section-sectors" style="padding:52px 0">
@@ -1109,6 +1159,35 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
   </div>
 
 
+  <!-- Preuves & transparence -->
+  <div class="proof-section" id="home-proof">
+    <div class="container">
+      <div class="tc mb24">
+        <h2 class="serif fw7" style="font-size:28px;margin-bottom:8px">Notre promesse : moins de bruit, plus de confiance</h2>
+        <p class="tg" style="max-width:640px;margin:0 auto;line-height:1.7">SilverCAM ne remplit pas la plateforme avec de faux profils. Les chiffres montent uniquement quand de vrais utilisateurs s’inscrivent, publient et complètent leurs dossiers.</p>
+      </div>
+      <div class="g3">
+        <div class="proof-card"><div style="font-size:28px;margin-bottom:10px">🚫</div><div class="fw7 mb8">Pas de faux volume</div><div class="tg sm" style="line-height:1.65">Les talents sans compte réel sont automatiquement retirés des résultats.</div></div>
+        <div class="proof-card"><div style="font-size:28px;margin-bottom:10px">🧠</div><div class="fw7 mb8">Score de compétences</div><div class="tg sm" style="line-height:1.65">Un mini-test sectoriel aide les recruteurs à comparer les profils plus objectivement.</div></div>
+        <div class="proof-card"><div style="font-size:28px;margin-bottom:10px">🔐</div><div class="fw7 mb8">Données maîtrisées</div><div class="tg sm" style="line-height:1.65">Les coordonnées sensibles sont protégées et débloquées selon les règles de la plateforme.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ courte -->
+  <div class="faq-home" id="home-faq">
+    <div class="container">
+      <h2 class="serif fw7 tc section-title-o" style="font-size:26px;margin-bottom:22px">Questions fréquentes</h2>
+      <div style="max-width:760px;margin:0 auto">
+        <details><summary>SilverCAM remplace-t-il un cabinet RH ?</summary><p>Non. SilverCAM facilite le sourcing, la vérification initiale et le contact direct. L’entreprise reste responsable de ses entretiens, décisions et contrats.</p></details>
+        <details><summary>Pourquoi les compteurs peuvent-ils être à zéro ?</summary><p>Parce que la plateforme affiche des données réelles. C’est plus honnête qu’un faux volume : les offres et talents apparaissent au fur et à mesure des inscriptions.</p></details>
+        <details><summary>Un candidat paie-t-il pour postuler ?</summary><p>Non. La création de profil et la candidature restent gratuites. Le CV Premium est optionnel pour gagner en visibilité.</p></details>
+        <details><summary>Une entreprise doit-elle payer avant de recruter ?</summary><p>Elle peut publier gratuitement avec le paiement au succès, ou payer une option de visibilité si elle veut accélérer son recrutement.</p></details>
+      </div>
+    </div>
+  </div>
+
+
   <footer>
     <div class="ft-logo">Silver<span>CAM</span></div>
     <div class="ft-lnks">
@@ -1117,7 +1196,7 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
       <button onclick="G('candidates')">Talents</button>
       <button onclick="G('pricing')">Tarifs</button>
     </div>
-    <p style="color:var(--gr);font-size:12px;margin-top:8px">© 2025 SilverCAM · Yaoundé, Cameroun 🇨🇲 · Support : +237 657 460 974</p>
+    <p style="color:var(--gr);font-size:12px;margin-top:8px">© 2026 SilverCAM · Yaoundé, Cameroun 🇨🇲 · Support : +237 657 460 974</p>
   </footer>
 </div>
 
@@ -1190,7 +1269,7 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
       </div>
 
       <!-- Payment lock bar -->
-      <div class="payment-lock-bar fu" style="animation-delay:.15s">
+      <div id="cand-lock-bar" class="payment-lock-bar fu hidden" style="animation-delay:.15s">
         <span>🔐</span>
         <span>Accès limité — Complétez le paiement pour débloquer tous les profils et fonctionnalités</span>
       </div>
@@ -2100,6 +2179,14 @@ function G(id) {
 }
 function navDash() { if (CU) G(CU.role === 'candidate' ? 'cv' : 'dashboard'); }
 function filterSector(sec) { $('fsec').value = sec; G('jobs'); }
+function scrollHomeSection(which) {
+  G('home');
+  const map = { how:'home-how', proof:'home-proof', faq:'home-faq' };
+  setTimeout(() => {
+    const el = document.getElementById(map[which] || which);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 80);
+}
 
 /* ══════════ AUTH ══════════ */
 function handleRegisterCityChange() {
@@ -2330,7 +2417,7 @@ function initHome() {
   const recent = [...JOBS].sort((a,b) => (b.premium?1:0)-(a.premium?1:0)).slice(0,3);
   $('home-jobs').innerHTML = recent.length
     ? recent.map(j => jobHTML(j, true)).join('')
-    : `<div class="empty-state"><div class="ei">📭</div><div class="et">Aucune offre publiée pour le moment</div><div class="tg sm">Soyez le premier à publier une offre !</div><button class="btn btn-gold mt12" onclick="G('post-job')" style="margin-top:12px">+ Publier une offre</button></div>`;
+    : `<div class="empty-state"><div class="ei">📭</div><div class="et">Aucune offre publiée pour le moment</div><div class="tg sm">Soyez le premier à publier une offre !</div><button class="btn btn-gold mt12" onclick="CU&&CU.role==='company'?G('post-job'):(G('register'),setRole('company'))" style="margin-top:12px">+ Publier une offre</button></div>`;
 }
 
 /* ══════════ JOBS ══════════ */
@@ -2492,9 +2579,11 @@ function renderCands() {
   (!CU || CU.role !== 'company') ? pw.classList.remove('hidden') : pw.classList.add('hidden');
 
   const isPrem = CU?.isPremium, isComp = CU?.role === 'company';
+  const lockBar = $('cand-lock-bar');
+  if (lockBar) lockBar.classList.toggle('hidden', !(isComp && !isPrem));
 
   if (!fl.length) {
-    $('cand-list').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">👥</div><div class="et">Aucun talent inscrit pour le moment</div><div class="tg sm">Les candidats apparaîtront ici une fois inscrits.</div></div>`;
+    $('cand-list').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">👥</div><div class="et">Aucun talent inscrit pour le moment</div><div class="tg sm">Les profils apparaissent ici uniquement après inscription, test et validation du dossier.</div></div>`;
     return;
   }
 
@@ -4472,7 +4561,7 @@ function finishQuiz() {
 const HELP_DATA = {
   candidat: [
     { icon: '📝', title: 'Créez votre compte', desc: 'Cliquez sur "S\'inscrire" → choisissez "Candidat" → remplissez vos informations de base.' },
-    { icon: '✅', title: 'Vérifiez votre profil', desc: 'Uploadez votre CNI et diplôme pour obtenir le badge Vérifié. Cela multiplie vos chances ×3.' },
+    { icon: '✅', title: 'Vérifiez votre profil', desc: 'Uploadez votre CV et votre diplôme pour obtenir le badge Vérifié. Cela renforce votre crédibilité auprès des recruteurs.' },
     { icon: '🧠', title: 'Test de compétences', desc: 'Le test de 5 questions évalue vos compétences sectorielles. Un score ≥ 80 vous donne le badge TOP.' },
     { icon: '🔍', title: 'Parcourez les offres', desc: 'Filtrez par secteur, ville ou type de contrat. Utilisez la barre de recherche en haut.' },
     { icon: '⚡', title: 'Postulez en 1 clic', desc: 'Sur chaque offre, cliquez "Postuler". Le recruteur reçoit votre profil instantanément.' },
@@ -4488,7 +4577,7 @@ const HELP_DATA = {
   ],
   faq: [
     { q: 'L\'inscription est-elle gratuite ?', r: 'Oui, l\'inscription est 100% gratuite pour les candidats et les entreprises. Vous payez uniquement pour les fonctionnalités Premium.' },
-    { q: 'Comment fonctionne la vérification ?', r: 'Vous uploadez votre CNI et diplôme dans votre espace. Notre équipe vérifie sous 24h et vous attribue le badge ✅ Vérifié.' },
+    { q: 'Comment fonctionne la vérification ?', r: 'Vous uploadez votre CV et votre diplôme dans votre espace. Les contrôles automatiques vérifient la lisibilité et les informations essentielles avant publication.' },
     { q: 'Qu\'est-ce que le Test de compétences ?', r: 'Un quiz de 5 questions sur votre secteur. Score ≥ 80/100 = badge TOP visible par les recruteurs. Score < 20 = compte suspendu.' },
     { q: 'Comment payer via Mobile Money ?', r: 'Orange Money au 657 460 974 ou MTN MoMo au 657 460 974. Mentionnez "SilverCAM + votre email". Confirmation en 30 sec.' },
     { q: 'Comment rejoindre le groupe WhatsApp ?', r: 'Cliquez le bouton vert "Offres sur WhatsApp" ou le bouton flottant 💬 en bas. Vous recevrez les offres du jour automatiquement.' },
@@ -4971,5 +5060,6 @@ function confirmWhatsAppCode() {
 }
 
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
