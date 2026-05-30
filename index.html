@@ -1908,17 +1908,6 @@ function loadAll() {
   if (unl)      { unlocked = new Set(unl); }
   if (session)  { CU = session; cvSk = CU.skills ? [...CU.skills] : []; }
 
-  // Charger immédiatement la copie locale pour afficher les compteurs sans clic,
-  // puis Firebase remplacera ces données dès que le réseau répondra.
-  const cachedJobs     = lsGet(LS_KEYS.jobs);
-  const cachedCands    = lsGet(LS_KEYS.cands);
-  const cachedTxns     = lsGet(LS_KEYS.txns);
-  const cachedAccounts = lsGet(LS_KEYS.accounts);
-  if (cachedJobs)     { JOBS.length = 0;     cachedJobs.forEach(j => { if (j) JOBS.push(j); }); }
-  if (cachedCands)    { CANDS.length = 0;    cachedCands.forEach(c => { if (c) CANDS.push(c); }); }
-  if (cachedTxns)     { TXNS.length = 0;     cachedTxns.forEach(t => { if (t) TXNS.push(t); }); }
-  if (cachedAccounts) { ACCOUNTS.length = 0; cachedAccounts.forEach(a => { if (a) ACCOUNTS.push(a); }); }
-
   // Initialiser Firebase
   if (typeof firebase !== 'undefined' && firebaseConfig && firebaseConfig.apiKey) {
     try {
@@ -1961,10 +1950,8 @@ function loadAll() {
         // Auto-healing: supprimer automatiquement les talents sans vrai compte candidat.
         cleanupOrphanCandidates(true);
 
-        // Mettre à jour l'affichage en temps réel, sans attendre une interaction utilisateur.
-        updateNav();
+        // Mettre à jour l'affichage en temps réel
         refreshCurrentPageView();
-        if ($('page-home').classList.contains('active')) initHome();
       });
 
     } catch (e) {
@@ -1998,7 +1985,6 @@ function cleanupOrphanCandidates(syncRemote) {
     .map(a => String(a.email).trim().toLowerCase());
 
   const before = CANDS.length;
-  if (!ACCOUNTS.length) return 0; // attendre le chargement des comptes avant toute purge
   const cleaned = CANDS.filter(c => {
     const email = c && c.email ? String(c.email).trim().toLowerCase() : '';
     return email && activeCandidateEmails.includes(email);
@@ -2020,10 +2006,7 @@ function cleanupOrphanCandidates(syncRemote) {
 function candidateHasAccount(c) {
   if (!c || !c.email) return false;
   const email = String(c.email).trim().toLowerCase();
-  return ACCOUNTS.some(a =>
-    a && a.role === 'candidate' && a.email && a.password &&
-    String(a.email).trim().toLowerCase() === email
-  );
+  return ACCOUNTS.some(a => a && a.role === 'candidate' && a.email && String(a.email).trim().toLowerCase() === email);
 }
 
 function getValidCandidates() {
@@ -4761,20 +4744,6 @@ window.initHome = function(){
   }, 400);
 };
 
-
-// Les compteurs doivent afficher directement les vrais nombres, sans attendre un clic
-// et sans animation qui peut conserver une ancienne valeur.
-initHome = window.initHome = function() {
-  const validCands = getValidCandidates();
-  $('stat-j').textContent = JOBS.length || '0';
-  $('stat-c').textContent = validCands.filter(c => c.isComplete).length || '0';
-  $('stat-ent').textContent = ACCOUNTS.filter(a => a && a.role === 'company').length || '0';
-  const recent = [...JOBS].sort((a,b) => (b.premium?1:0)-(a.premium?1:0)).slice(0,3);
-  $('home-jobs').innerHTML = recent.length
-    ? recent.map(j => jobHTML(j, true)).join('')
-    : `<div class="empty-state"><div class="ei">📭</div><div class="et">Aucune offre publiée pour le moment</div><div class="tg sm">Soyez le premier à publier une offre !</div><button class="btn btn-gold mt12" onclick="G('post-job')" style="margin-top:12px">+ Publier une offre</button></div>`;
-};
-
 /* ══════════ INIT ══════════ */
 // Si session restaurée, mettre à jour la nav
 if (CU) { updateNav(); }
@@ -4826,5 +4795,5 @@ function confirmWhatsAppCode() {
 }
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01bcb3ccd208eb4',t:'MTc3OTc4ODE2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01eae49de727e86',t:'MTc3OTgxODQ0MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a02ee9ee5d612b0b',t:'MTc3OTk4ODY1Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a035dbcf18e3edee',t:'MTc4MDA2MTQ3OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01bcb3ccd208eb4',t:'MTc3OTc4ODE2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01eae49de727e86',t:'MTc3OTgxODQ0MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a02ee9ee5d612b0b',t:'MTc3OTk4ODY1Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a035c9b68cc094b1',t:'MTc4MDA2MDczNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
