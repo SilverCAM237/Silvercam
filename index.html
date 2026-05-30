@@ -1367,7 +1367,7 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
             <button class="btn btn-primary btn-sm" onclick="confirmWhatsAppCode()">Valider</button>
           </div>
         </div>
-        <div class="xs tg mt4">📱 Votre WhatsApp sera utilisé pour recevoir les offres d'emploi et les alertes de recrutement.</div>
+        <div class="xs tg mt4">📱 Vérification WhatsApp obligatoire pour sécuriser votre compte. Ce numéro peut être différent du numéro de téléphone indiqué sur votre CV.</div>
         
 
       </div>
@@ -1491,12 +1491,31 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
           <!-- WhatsApp Status -->
           <div class="card" style="padding:14px;border-color:var(--g);background:var(--gp);display:flex;flex-direction:column;justify-content:center;">
             <div class="fw6 sm" style="color:var(--g)">💬 Statut WhatsApp</div>
-            <div class="xs tg mb4" style="color:var(--g)">Vérifié lors de l'inscription</div>
-            <div class="fw7 sm" style="color:var(--g)">✅ Numéro validé ✓</div>
+            <div class="xs tg mb4" style="color:var(--g)">Vérifié lors de l'inscription — obligatoire</div>
+            <div class="fw7 sm" style="color:var(--g)">✅ Numéro WhatsApp validé ✓</div>
+            <div class="xs tg mt4" style="color:var(--g);line-height:1.45">Le téléphone présent sur le CV peut être différent.</div>
           </div>
 
         </div>
         <div id="verif-status" class="mt12 sm fw6" style="color:var(--red)">⚠️ Diplôme et CV requis pour valider votre compte à 100%</div>
+      </div>
+
+      <!-- TEST DE COMPÉTENCES -->
+      <div class="card mb20 fu" style="animation-delay:.34s;border-color:var(--gold);background:linear-gradient(135deg,#FFFBF0,#fff);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--g),var(--gold));background-size:200%;animation:gradShift 3s linear infinite"></div>
+        <div class="fx jcb wrap gap16" style="align-items:center">
+          <div>
+            <div class="fx gap8 mb4" style="align-items:center">
+              <span style="font-size:28px;animation:wiggle 3s ease-in-out infinite">🧠</span>
+              <span class="serif fw7" style="font-size:18px;color:var(--dk)">Test de compétences</span>
+              <span id="quiz-score-badge" class="hidden badge badge-g" style="font-size:11px"></span>
+            </div>
+            <div class="tg sm" style="line-height:1.6;max-width:420px">Évaluez vos compétences sectorielles en 5 questions. Un score ≥ 80/100 vous obtient le badge <strong>TOP</strong> visible par les recruteurs !</div>
+          </div>
+          <button class="btn btn-gold" id="btn-open-quiz" onclick="openQuizModal()" style="flex-shrink:0;white-space:nowrap">
+            🚀 Lancer le test
+          </button>
+        </div>
       </div>
 
       <div class="g2 fu" style="animation-delay:.38s">
@@ -1539,15 +1558,6 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
         <div class="fx gap8 mb12" style="align-items:center">
           <span style="font-size:18px">⚠️</span>
           <span class="fw7" style="font-size:15px;color:var(--red)">Zone dangereuse</span>
-        </div>
-        <div class="card mb16" style="border-color:var(--g);background:var(--gp)">
-          <div class="fx jcb wrap gap12" style="align-items:center">
-            <div>
-              <div class="fw7 mb4" style="color:var(--g)">🔑 Changer mon code PIN</div>
-              <div class="sm tg" style="line-height:1.6">Modifiez votre code PIN de connexion à 4 chiffres.</div>
-            </div>
-            <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="changePin()">Changer PIN</button>
-          </div>
         </div>
         <div class="card" style="border-color:var(--red);background:var(--redp)">
           <div class="fx jcb wrap gap12" style="align-items:center">
@@ -1595,7 +1605,12 @@ footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-
       </div>
       <div class="g2">
         <div class="fg"><label>Type de contrat</label>
-          <select class="fc" id="pj-type"><option>CDI</option><option>CDD</option><option>Stage</option><option>Freelance</option><option>Temps partiel</option><option>Alternance</option></select>
+          <select class="fc" id="pj-type" onchange="handleJobTypeChange()"><option>CDI</option><option>CDD</option><option>Stage</option><option>Freelance</option><option>Temps partiel</option><option>Alternance</option></select>
+          <div id="pj-cdd-duration-block" style="display:none;margin-top:10px">
+            <label style="font-size:13px;font-weight:600;margin-bottom:5px;color:var(--mid);display:block">Durée du CDD <span style="color:var(--red)">*</span></label>
+            <input class="fc" id="pj-cdd-duration" placeholder="Ex: 3 mois, 6 mois, 1 an…"/>
+            <div class="xs tg mt4">Obligatoire uniquement pour un contrat CDD.</div>
+          </div>
         </div>
         <div class="fg"><label>Salaire mensuel brut</label><input class="fc" id="pj-sal" placeholder="Ex: 150000" type="number" min="0" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" /></div>
       </div>
@@ -2231,18 +2246,8 @@ function doLogin() {
     return;
   }
 
-  // Vérifier si ce compte a un PIN défini
-  if (account.pin) {
-    // PIN requis → ouvrir modal PIN pour vérification
-    openPinModal('verify', account.pin, () => finishLogin(account, email));
-  } else {
-    // Premier accès → créer un PIN
-    openPinModal('setup', null, (newPin) => {
-      account.pin = newPin;
-      saveAll();
-      finishLogin(account, email);
-    });
-  }
+  // Connexion directe sans code PIN
+  finishLogin(account, email);
 }
 
 function finishLogin(account, email) {
@@ -2288,6 +2293,11 @@ function waRegister() { toast('📱 Inscription via WhatsApp — Code envoyé !'
 
 function logout() {
   CU = null; unlocked = new Set(); cvSk = [];
+  // Réinitialiser les flags globaux de vérification (sinon ils fuitent entre comptes)
+  window._dipUploaded = null; window._cvUploaded = null;
+  window._dipVerified = false; window._cvVerified = false;
+  window._waVerified = false;
+  _waVerifCode = '';
   saveAll();
   updateNav(); toast('À bientôt ! 👋'); G('home');
 }
@@ -2359,34 +2369,34 @@ function refreshPubBar() {
 function jobHTML(j, compact) {
   const applied  = CU && j.applications && j.applications.includes(CU.name);
   const isPrem   = j.premium;
-  const skillsH  = j.skills.map(s => `<span class="badge badge-g">${s}</span>`).join('');
+  const skillsH  = j.skills.map(s => `<span class="badge badge-g">${escHTML(s)}</span>`).join('');
   const applyBtn = !compact && CU?.role === 'candidate'
     ? `<button class="btn btn-sm ${applied ? 'btn-ghost' : 'btn-primary'}" ${applied?'disabled':''} onclick="applyJob(${j.id})">${applied ? '✓ Candidature envoyée' : 'Postuler'}</button>` : '';
   const waBtn = !compact && CU?.role === 'candidate' && j.waEnabled
-    ? `<button class="btn btn-wa btn-sm" onclick="applyWA(${j.id},'${j.title}','${j.company}')">💬 Via WhatsApp</button>` : '';
+    ? `<button class="btn btn-wa btn-sm" onclick="applyWA(${j.id},'${escAttrJS(j.title)}','${escAttrJS(j.company)}')">💬 Via WhatsApp</button>` : '';
   const descBlock = !compact ? `
     <div class="mt8">
       <button style="background:none;border:none;color:var(--g);font-weight:600;font-size:13px;cursor:pointer;padding:0" onclick="tdesc('d${j.id}',this)">▼ Voir la description</button>
-      <div id="d${j.id}" class="hidden" style="color:var(--gr);font-size:13px;line-height:1.65;margin-top:8px">${j.desc || '—'}</div>
+      <div id="d${j.id}" class="hidden" style="color:var(--gr);font-size:13px;line-height:1.65;margin-top:8px">${escHTML(j.desc || '—')}</div>
     </div>` : '';
   return `
   <div class="jcard ${isPrem ? 'premium' : ''}">
     <div class="fx jcb wrap gap12">
       <div>
         <div class="fx gap8 wrap mb8">
-          <span class="serif fw7" style="font-size:17px">${j.title}</span>
+          <span class="serif fw7" style="font-size:17px">${escHTML(j.title)}</span>
           ${isPrem  ? '<span class="ftag">⭐ Mise en avant</span>' : ''}
           ${j.urgent ? '<span class="badge badge-red">🔥 Urgent</span>' : ''}
           ${j.sf     ? '<span class="badge badge-g" style="font-size:11px">🤝 Au succès</span>' : ''}
           ${j.waEnabled ? '<span class="badge badge-wa" style="font-size:11px">💬 WA</span>' : ''}
         </div>
         <div class="tg sm">
-          🏢 ${j.company} &nbsp;·&nbsp; 📍 ${j.city} &nbsp;·&nbsp; 📄 ${j.type} &nbsp;·&nbsp; 💰 ${j.salary || 'À négocier'}
+          🏢 ${escHTML(j.company)} &nbsp;·&nbsp; 📍 ${escHTML(j.city)} &nbsp;·&nbsp; 📄 ${escHTML(formatJobType(j))} &nbsp;·&nbsp; 💰 ${escHTML(j.salary || 'À négocier')}
         </div>
         <div class="fx gap6 wrap mt8">${skillsH}</div>
       </div>
       <div class="fx gap6 wrap" style="align-items:center">
-        <span class="xs tg">${j.posted}</span>
+        <span class="xs tg">${escHTML(j.posted)}</span>
         ${applyBtn}${waBtn}
       </div>
     </div>
@@ -2492,7 +2502,7 @@ function renderCands() {
     const isOwnProfile = CU && CU.role === 'candidate' && CU.email === c.email;
     const locked = !isOwnProfile && !unlocked.has(c.id);
     const stars  = '★'.repeat(c.rating) + '☆'.repeat(5 - c.rating);
-    const skH    = c.skills.map(s => `<span class="badge badge-g">${s}</span>`).join('');
+    const skH    = c.skills.map(s => `<span class="badge badge-g">${escHTML(s)}</span>`).join('');
     const bdH    = (c.badges||[]).map(b => `<span class="badge badge-gold">🏅 ${b}</span>`).join('');
 
     // Vérification badges
@@ -2504,8 +2514,8 @@ function renderCands() {
       <div class="card locked-c" style="min-height:310px">
         <div class="lock-blur">
           <div class="fx gap12 mb12">
-            <div class="av">${c.name[0].toUpperCase()}</div>
-            <div><div class="fw7" style="font-size:15px">${c.name}</div><div class="xs tg mt4">📍 ${c.city} · ${c.sector}</div></div>
+            <div class="av">${initial(c.name)}</div>
+            <div><div class="fw7" style="font-size:15px">${escHTML(c.name)}</div><div class="xs tg mt4">📍 ${escHTML(c.city)} · ${escHTML(c.sector)}</div></div>
           </div>
           <div class="sbox"><span class="sm fw6" style="color:var(--mid)">Score</span><span class="sn">${c.score}/100</span></div>
           <div class="fx gap6 wrap mb8">${skH}</div>
@@ -2515,8 +2525,8 @@ function renderCands() {
           <div class="fw7" style="color:#fff;font-size:15px;margin-bottom:4px;text-align:center">Profil TOP verrouillé</div>
           <div style="color:rgba(255,255,255,.75);font-size:12px;text-align:center;margin-bottom:16px">Score ${c.score}/100 · Débloquez pour accéder au contact direct</div>
           <div class="fx gap8 wrap" style="justify-content:center">
-            <button class="btn btn-gold btn-sm" onclick="unlockProf(${c.id},'${c.name.replace(/'/g,"\\'")}')">💳 Débloquer — 10 000 FCFA</button>
-            <button class="btn btn-primary btn-sm" onclick="unlockPremium(${c.id},'${c.name.replace(/'/g,"\\'")}')">✦ Premium — 25 000 FCFA</button>
+            <button class="btn btn-gold btn-sm" onclick="unlockProf(${c.id},'${escAttrJS(c.name)}')">💳 Débloquer — 10 000 FCFA</button>
+            <button class="btn btn-primary btn-sm" onclick="unlockPremium(${c.id},'${escAttrJS(c.name)}')">✦ Premium — 25 000 FCFA</button>
           </div>
         </div>
       </div>`;
@@ -2524,30 +2534,30 @@ function renderCands() {
 
     const ctaBtns = isComp
       ? `<div class="fx gap6 wrap mt8">
-           <button class="btn btn-wa btn-sm" onclick="doContact(${c.id},'whatsapp','${c.name.replace(/'/g,"\\'")}')">💬 WhatsApp</button>
-           <button class="btn btn-ghost btn-sm" onclick="doContact(${c.id},'call','${c.name.replace(/'/g,"\\'")}')">📞 Appel</button>
-           <button class="btn btn-outline btn-sm" onclick="doContact(${c.id},'email','${c.name.replace(/'/g,"\\'")}')">✉ Message</button>
+           <button class="btn btn-wa btn-sm" onclick="doContact(${c.id},'whatsapp','${escAttrJS(c.name)}')">💬 WhatsApp</button>
+           <button class="btn btn-ghost btn-sm" onclick="doContact(${c.id},'call','${escAttrJS(c.name)}')">📞 Appel</button>
+           <button class="btn btn-outline btn-sm" onclick="doContact(${c.id},'email','${escAttrJS(c.name)}')">✉ Message</button>
          </div>`
       : `<button class="btn btn-ghost btn-sm btn-w mt8" onclick="toast('Connectez-vous en tant qu\\'entreprise pour contacter ce talent','err')">🔒 Connexion entreprise requise</button>`;
 
     return `
     <div class="card">
       <div class="fx gap12 mb12">
-        <div class="av">${c.name[0].toUpperCase()}</div>
+        <div class="av">${initial(c.name)}</div>
         <div style="min-width:0">
-          <div class="fw7" style="font-size:15px">${c.name}</div>
-          <div class="xs tg mt4">📍 ${c.city} · ${c.sector}</div>
+          <div class="fw7" style="font-size:15px">${escHTML(c.name)}</div>
+          <div class="xs tg mt4">📍 ${escHTML(c.city)} · ${escHTML(c.sector)}</div>
           
           <div class="mt4">${verBadges}${c.isTop ? '<span class="badge badge-pur" style="font-size:11px">✦ TOP</span>' : ''}</div>
         </div>
       </div>
-      <div class="sm tg mb8" style="line-height:1.55">${c.bio || 'Aucune présentation ajoutée.'}</div>
+      <div class="sm tg mb8" style="line-height:1.55">${escHTML(c.bio || 'Aucune présentation ajoutée.')}</div>
       ${c.score > 0 ? `<div class="sbox"><span class="sm fw6" style="color:var(--mid)">Score compétences</span><span class="sn">${c.score}/100</span></div>` : ''}
       ${skH ? `<div class="fx gap6 wrap mb8">${skH}</div>` : ''}
       ${bdH ? `<div class="fx gap6 wrap mb8">${bdH}</div>` : ''}
-      <div class="xs tg mb4">🎓 ${c.degree || '—'}</div>
-      <div class="xs tg mb12">💼 ${c.exp || '—'}</div>
-      ${c.salary ? `<div class="xs tg mb12">💰 Prétention : ${c.salary}</div>` : ''}
+      <div class="xs tg mb4">🎓 ${escHTML(c.degree || '—')}</div>
+      <div class="xs tg mb12">💼 ${escHTML(c.exp || '—')}</div>
+      ${c.salary ? `<div class="xs tg mb12">💰 Prétention : ${escHTML(c.salary)}</div>` : ''}
       ${ctaBtns}
     </div>`;
   }).join('');
@@ -2564,7 +2574,7 @@ function unlockProf(id, name) {
   pay('unlock_' + id, 'Débloquer ce talent — 10 000 FCFA', '10 000 FCFA', () => {
     unlocked.add(id);
     saveAll();
-    TXNS.push({ date: nd(), type: 'Déblocage talent', name, amount: '10 000', status: 'Payé' });
+    addTxn({ date: nd(), type: 'Déblocage talent', name, amount: '10 000', status: 'Payé' });
     renderCands();
     toast('✅ Talent débloqué ! Vous pouvez maintenant le contacter directement.');
   });
@@ -2576,7 +2586,7 @@ function unlockPremium(id, name) {
     unlocked.add(id);
     saveAll();
     if (CU) { CU.isPremium = true; updateNav(); saveAll(); }
-    TXNS.push({ date: nd(), type: 'Premium — Déblocage talent', name, amount: '25 000', status: 'Payé' });
+    addTxn({ date: nd(), type: 'Premium — Déblocage talent', name, amount: '25 000', status: 'Payé' });
     renderCands();
     toast('✦ Premium activé ! Talent débloqué, badge recruteur et offre mise en avant inclus.');
   });
@@ -2621,12 +2631,31 @@ function doContact(id, method, name) {
     }
     toast('✉ Email ouvert pour ' + name);
   }
-  TXNS.push({ date: nd(), type: 'Contact ' + method, name, amount: 'Inclus', status: 'Effectué' });
+  addTxn({ date: nd(), type: 'Contact ' + method, name, amount: 'Inclus', status: 'Effectué' });
 }
 
 /* ══════════ CV ══════════ */
+function suspendCandidateForLowScore(score) {
+  if (!CU) return;
+  const emailToBan = CU.email;
+  const candIdx = CANDS.findIndex(c => c.email === emailToBan);
+  if (candIdx >= 0) CANDS.splice(candIdx, 1);
+  const accIdx = ACCOUNTS.findIndex(a => a.email === emailToBan);
+  if (accIdx >= 0) ACCOUNTS.splice(accIdx, 1);
+  CU = null;
+  unlocked = new Set();
+  cvSk = [];
+  saveAll();
+  updateNav();
+  toast('Compte suspendu : score de compétences inférieur à 20/100.', 'err');
+  G('home');
+}
 function initCV() {
   if (!CU) return;
+  if (CU.role === 'candidate' && CU.quizScore !== undefined && Number(CU.quizScore) < 20) {
+    suspendCandidateForLowScore(Number(CU.quizScore));
+    return;
+  }
   $('cv-info').innerHTML =
     `<div><strong>Nom :</strong> ${CU.name}</div>
      <div><strong>Email :</strong> ${CU.email}</div>
@@ -2668,8 +2697,29 @@ function initCV() {
   updateProg();
   $('cv-ups').classList.toggle('hidden', CU.isPremium);
   updateVerif();
-  // Le quiz ne s'ouvre plus automatiquement au chargement :
-  // l'utilisateur ne doit pas être obligé d'appuyer sur un bouton dès l'ouverture du site.
+  // Afficher le score du quiz si déjà passé
+  const quizBadge = $('quiz-score-badge');
+  const quizBtn = $('btn-open-quiz');
+  if (CU.quizScore && CU.quizScore > 0) {
+    if (quizBadge) { quizBadge.textContent = 'Score : ' + CU.quizScore + '/100'; quizBadge.classList.remove('hidden'); }
+    // Le test ne peut être passé qu'une seule fois : désactiver l'action « Repasser »
+    if (quizBtn) {
+      quizBtn.textContent = '✅ Test déjà passé';
+      quizBtn.disabled = true;
+      quizBtn.style.opacity = '0.6';
+      quizBtn.style.cursor = 'not-allowed';
+      quizBtn.onclick = function(e){ if(e&&e.preventDefault)e.preventDefault(); toast('ℹ️ Vous avez déjà passé le test de compétences. Un seul passage est autorisé.', 'wa'); return false; };
+    }
+  } else {
+    if (quizBadge) quizBadge.classList.add('hidden');
+    if (quizBtn) {
+      quizBtn.textContent = '🚀 Lancer le test';
+      quizBtn.disabled = false;
+      quizBtn.style.opacity = '';
+      quizBtn.style.cursor = '';
+      quizBtn.onclick = openQuizModal;
+    }
+  }
 }
 
 function addSkill() {
@@ -2679,7 +2729,7 @@ function addSkill() {
 function removeSk(s) { cvSk = cvSk.filter(x => x !== s); renderSk(); updateProg(); }
 function renderSk() {
   $('cv-skills').innerHTML = cvSk.length
-    ? cvSk.map(s => `<span class="stag">${s}<button onclick="removeSk('${s.replace(/'/g,"\\'")}')">×</button></span>`).join('')
+    ? cvSk.map(s => `<span class="stag">${escHTML(s)}<button onclick="removeSk('${escAttrJS(s)}')">×</button></span>`).join('')
     : '<span class="tg sm">Aucune compétence ajoutée</span>';
 }
 function updateProg() {
@@ -2800,38 +2850,56 @@ async function analyzeDocumentWithAI(file, type) {
 
   const hay = normalizeText([file.name, text].join(' '));
   const nameOk = containsPersonName(hay, CU?.name || '');
-  const contactOk = containsContact(hay, CU?.email || '', CU?.whatsapp || CU?.phone || '');
+  // WhatsApp est déjà vérifié obligatoirement à l'inscription.
+  // Pour le CV, on vérifie seulement qu'un contact existe dans le document :
+  // le numéro de téléphone du CV n'a PAS besoin de correspondre au numéro WhatsApp validé.
+  const contactOk = type === 'cv'
+    ? containsCvContact(hay)
+    : containsContact(hay, CU?.email || '', CU?.whatsapp || CU?.phone || '');
   const yearOk = /\b(19|20)\d{2}\b/.test(hay);
   const fileOk = file.size > 10 * 1024 && (isPdf || isImg || isDoc);
   const imageOk = !imgInfo || (imgInfo.width >= 600 && imgInfo.height >= 400);
 
+  // Texte « utile » (hors nom de fichier) — si trop court, on refuse au lieu de valider par défaut
+  const textOnly = hay.replace(normalizeText(file.name), '').trim();
+  const textAvailable = textOnly.length > 40;
+
   if (type === 'dip') {
-    const diplomaOk = /(diplome|diploma|attestation|certificat|certificate|licence|license|bachelor|master|maitrise|baccalaureat|bts|dut|formation|degree)/.test(hay);
-    const schoolOk = /(universite|university|ecole|school|institut|institute|college|lycee|faculty|faculte|centre de formation)/.test(hay);
-    const textAvailable = hay.replace(normalizeText(file.name), '').trim().length > 25;
+    // Si aucun texte exploitable (image floue, PDF scanné sans OCR…), on REFUSE
+    if (!textAvailable) {
+      return { ok:false, score:0, checks:{ 'fichier lisible':fileOk && imageOk, 'texte exploitable détecté':false },
+        text, message:'Diplôme illisible : aucun texte n’a pu être extrait. Envoyez un PDF texte ou une photo nette et bien éclairée.' };
+    }
+    const diplomaOk = /(diplome|diploma|attestation|certificat|certificate|licence|license|bachelor|master|maitrise|baccalaureat|bts|dut|formation|degree|brevet|cap|cqp|cea|cea2|probatoire)/.test(hay);
+    const schoolOk = /(universite|university|ecole|school|institut|institute|college|lycee|faculty|faculte|centre de formation|academy|academie)/.test(hay);
     const checks = {
       'fichier lisible': fileOk && imageOk,
-      'nom du candidat détecté': textAvailable ? nameOk : true,
-      'type diplôme/certificat détecté': diplomaOk || /dipl/i.test(file.name),
-      'établissement détecté': textAvailable ? schoolOk : true,
-      'année ou session détectée': textAvailable ? yearOk : true
+      'nom du candidat détecté': nameOk,
+      'type diplôme/certificat détecté': diplomaOk,
+      'établissement détecté': schoolOk,
+      'année ou session détectée': yearOk
     };
-    const score = scoreChecks(checks, { 'fichier lisible':20, 'nom du candidat détecté':25, 'type diplôme/certificat détecté':25, 'établissement détecté':15, 'année ou session détectée':15 });
-    if (score < 70) return { ok:false, score, checks, text, message:'Diplôme refusé : informations essentielles non détectées (nom, type de diplôme, établissement ou année).' };
+    const score = scoreChecks(checks, { 'fichier lisible':15, 'nom du candidat détecté':25, 'type diplôme/certificat détecté':25, 'établissement détecté':20, 'année ou session détectée':15 });
+    if (score < 70) return { ok:false, score, checks, text, message:'Diplôme refusé : informations essentielles non détectées (nom du candidat, type de diplôme, établissement ou année).' };
     return { ok:true, score, checks, text };
   }
 
+  // === Type CV ===
+  if (!textAvailable) {
+    return { ok:false, score:0, checks:{ 'fichier lisible':fileOk && imageOk, 'texte exploitable détecté':false },
+      text, message:'CV illisible : aucun texte n’a pu être extrait. Envoyez un PDF/Word lisible ou une photo nette.' };
+  }
   const cvWordOk = /(cv|curriculum|vitae|profil|experience|expérience|formation|competence|compétence|skills|education|emploi|stage|projet)/.test(hay);
-  const expOk = /(experience|expérience|emploi|stage|projet|mission|formation|education|diplome|diplôme)/.test(hay);
+  const expOk = /(experience|expérience|emploi|stage|projet|mission|formation|education|diplome|diplôme|poste|fonction)/.test(hay);
   const checks = {
     'fichier lisible': fileOk && imageOk,
-    'nom du candidat détecté': (hay.length > normalizeText(file.name).length + 25) ? nameOk : true,
-    'contact détecté': contactOk,
+    'nom du candidat détecté': nameOk,
+    'contact CV détecté (sans correspondance WhatsApp requise)': contactOk,
     'document CV détecté': cvWordOk || /cv|resume|curriculum/i.test(file.name),
     'expérience/formation détectée': expOk
   };
-  const score = scoreChecks(checks, { 'fichier lisible':20, 'nom du candidat détecté':20, 'contact détecté':20, 'document CV détecté':20, 'expérience/formation détectée':20 });
-  if (score < 70) return { ok:false, score, checks, text, message:'CV refusé : informations nécessaires non détectées (nom, contact, expérience/formation).' };
+  const score = scoreChecks(checks, { 'fichier lisible':15, 'nom du candidat détecté':25, 'contact CV détecté (sans correspondance WhatsApp requise)':20, 'document CV détecté':20, 'expérience/formation détectée':20 });
+  if (score < 70) return { ok:false, score, checks, text, message:'CV refusé : informations nécessaires non détectées (nom du candidat, contact CV, expérience/formation). Le téléphone du CV peut être différent du WhatsApp vérifié.' };
   return { ok:true, score, checks, text };
 }
 
@@ -2852,6 +2920,15 @@ function containsContact(hay, email, phone) {
   const digits = (phone || '').replace(/\D/g,'');
   const anyPhone = /(\+?237)?\s*[62][0-9\s\-.]{7,}/.test(hay);
   return !!(emailOk || anyEmail || (digits && hay.replace(/\D/g,'').includes(digits.slice(-9))) || anyPhone);
+}
+
+function containsCvContact(hay) {
+  // Vérification souple du CV : un email OU n'importe quel numéro de téléphone suffit.
+  // On ne compare pas avec le WhatsApp, car le WhatsApp est validé séparément et obligatoirement.
+  const anyEmail = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(hay);
+  const genericPhone = /(?:\+?\d{1,3}[\s.\-]*)?(?:\(?\d{2,4}\)?[\s.\-]*){2,5}\d{2,4}/.test(hay);
+  const cameroonPhone = /(\+?237)?\s*[62][0-9\s\-.]{7,}/.test(hay);
+  return !!(anyEmail || genericPhone || cameroonPhone);
 }
 async function extractRawText(file) {
   const buf = await file.arrayBuffer();
@@ -2900,18 +2977,27 @@ async function ocrImageText(file) {
 }
 
 function updateVerif() {
-  const cnt = [window._dipVerified, window._cvVerified, true].filter(Boolean).length;
-  if (cnt === 3) {
-    $('verif-status').textContent = "✅ Dossier complet : Diplôme + CV envoyés et vérifiés par IA. Votre compte peut être publié.";
-    $('verif-status').style.color = 'var(--g)';
+  const dipOk = !!window._dipVerified;
+  const cvOk  = !!window._cvVerified;
+  const el = $('verif-status');
+  if (!el) return;
+  if (dipOk && cvOk) {
+    el.textContent = "✅ Dossier complet : Diplôme + CV envoyés et vérifiés par IA. Votre compte peut être publié.";
+    el.style.color = 'var(--g)';
+  } else if (dipOk && !cvOk) {
+    el.textContent = "⚠️ Diplôme vérifié. Il reste à envoyer et valider votre CV par IA.";
+    el.style.color = 'var(--red)';
+  } else if (!dipOk && cvOk) {
+    el.textContent = "⚠️ CV vérifié. Il reste à envoyer et valider votre Diplôme par IA.";
+    el.style.color = 'var(--red)';
   } else {
-    $('verif-status').textContent = "⚠️ Diplôme et CV doivent être envoyés puis validés par IA (nom, contact, formation/expérience, établissement/année).";
-    $('verif-status').style.color = 'var(--red)';
+    el.textContent = "⚠️ Diplôme et CV doivent être envoyés puis validés par IA (nom, contact CV, formation/expérience, établissement/année). Le numéro du CV peut être différent du WhatsApp vérifié.";
+    el.style.color = 'var(--red)';
   }
   if (CU) {
-    CU.verifDip = !!window._dipVerified;
-    CU.verifWA = true;
-    CU.verifCNI = !!window._cvVerified; // re-use CNI property as CV uploaded/verified
+    CU.verifDip = dipOk;
+    CU.verifCNI = cvOk; // propriété historique réutilisée comme « CV vérifié »
+    CU.verifWA  = CU.verifWA === true; // conserve l'état réel de vérif WhatsApp
     if (!CU.documents) CU.documents = {};
   }
 }
@@ -2927,7 +3013,7 @@ function saveCV() {
                      window._cvVerified;
 
   if (!isComplete) {
-    toast('❌ Remplissez tous les champs (Bio, Diplôme, Expérience, Compétences) et envoyez/validez par IA votre Diplôme et votre CV pour valider votre dossier à 100% !', 'err');
+    toast('❌ Remplissez tous les champs et envoyez/validez par IA votre Diplôme et votre CV. Le numéro du CV peut être différent du WhatsApp vérifié.', 'err');
     return;
   }
 
@@ -2977,6 +3063,14 @@ function doPostJob() {
     toast('Veuillez choisir une ville', 'err'); return;
   }
   
+  const jobType = v('pj-type');
+  const cddDuration = v('pj-cdd-duration').trim();
+  if (jobType === 'CDD' && !cddDuration) {
+    toast('Veuillez indiquer la durée du CDD.', 'err');
+    $('pj-cdd-duration')?.focus();
+    return;
+  }
+
   const isPrem = $('pj-prem').checked;
   const sf     = $('pj-sf').checked;
   
@@ -2993,6 +3087,20 @@ function doPostJob() {
       pushJob(t, false, true, sector, city);
     }
   }
+}
+
+function handleJobTypeChange() {
+  const isCDD = v('pj-type') === 'CDD';
+  const block = $('pj-cdd-duration-block');
+  const input = $('pj-cdd-duration');
+  if (block) block.style.display = isCDD ? 'block' : 'none';
+  if (!isCDD && input) input.value = '';
+  if (isCDD && input) setTimeout(() => input.focus(), 50);
+}
+
+function formatJobType(j) {
+  const type = j?.type || '—';
+  return type === 'CDD' && j.contractDuration ? `${type} (${j.contractDuration})` : type;
 }
 
 function handleJobSectorChange() {
@@ -3020,6 +3128,8 @@ function handleJobCityChange() {
 }
 function pushJob(title, premium, sf, sector, city) {
   const sal = v('pj-sal') || 'À négocier';
+  const jobType = v('pj-type');
+  const contractDuration = jobType === 'CDD' ? v('pj-cdd-duration').trim() : '';
   JOBS.unshift({
     id: Date.now(), title,
     author: CU ? CU.email : '',
@@ -3027,7 +3137,7 @@ function pushJob(title, premium, sf, sector, city) {
     companyId: CU ? CU.email : '',
     company: CU ? (CU.company || 'Mon Entreprise') : 'Mon Entreprise',
     companyPhone: CU ? (CU.whatsapp || CU.phone || '') : '',
-    sector: sector, city: city, type: v('pj-type'),
+    sector: sector, city: city, type: jobType, contractDuration,
     salary: sal, salN: parseInt(sal.replace(/\D/g,'')) || 0,
     desc: v('pj-desc'),
     skills: v('pj-sk').split(',').map(s => s.trim()).filter(Boolean),
@@ -3040,15 +3150,16 @@ function pushJob(title, premium, sf, sector, city) {
   if (!sf) {
     const amount = premium ? '20 000' : '10 000';
     const typeLabel = premium ? "Publication d'offre mise en avant (standard + boost)" : "Publication d'offre standard";
-    TXNS.push({ date: nd(), type: typeLabel, name: title, amount: amount, status: 'Payé' });
+    addTxn({ date: nd(), type: typeLabel, name: title, amount: amount, status: 'Payé' });
   } else if (premium) {
-    TXNS.push({ date: nd(), type: 'Offre mise en avant (au succès)', name: title, amount: '10 000', status: 'Payé' });
+    addTxn({ date: nd(), type: 'Offre mise en avant (au succès)', name: title, amount: '10 000', status: 'Payé' });
   }
   toast('✅ Offre publiée' + (premium ? ' et mise en avant !' : ' avec succès !'));
   // Reset form
-  ['pj-t','pj-sal','pj-sk','pj-desc'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  ['pj-t','pj-sal','pj-sk','pj-desc','pj-cdd-duration'].forEach(id => { const el=$(id); if(el) el.value=''; });
   $('pj-prem').checked = false; $('pj-urg').checked = false;
   $('pj-wa').checked = false;   $('pj-sf').checked = false;
+  $('pj-type').value = 'CDI'; handleJobTypeChange();
   $('pj-sec').value = ''; $('pj-sec-other').value = ''; $('pj-sec-other').style.display = 'none';
   $('pj-city').value = ''; $('pj-city-other').value = ''; $('pj-city-other').style.display = 'none';
   saveAll();
@@ -3075,7 +3186,8 @@ function initDash() {
 
   const myJ  = JOBS.filter(j => isMyCompanyJob(j));
   const totA = myJ.reduce((n,j) => n + (j.applications||[]).length, 0);
-  const rev  = TXNS.reduce((n,t) => n + (parseInt(t.amount.replace(/\D/g,''))||0), 0);
+  const myTxns = getUserTxns();
+  const rev  = myTxns.reduce((n,t) => n + (parseInt(String(t.amount).replace(/\D/g,''))||0), 0);
 
   $('dash-stats').innerHTML = [
     { n: myJ.length,               l: 'Offres publiées',      i: '📋' },
@@ -3118,17 +3230,17 @@ function renderDashOffs(myJ) {
             const isUnlocked = cand && unlocked.has(cand.id);
             if (isAccepted) {
               return `<div class="fx gap6" style="background:var(--gp);border:1.5px solid var(--g);border-radius:20px;padding:4px 12px 4px 8px">
-                <div class="av av-sm" style="width:24px;height:24px;font-size:12px;border-radius:6px;background:var(--g);color:#fff">${n[0].toUpperCase()}</div>
-                <span style="font-size:13px;font-weight:600;color:var(--g)">${n}</span>
+                <div class="av av-sm" style="width:24px;height:24px;font-size:12px;border-radius:6px;background:var(--g);color:#fff">${initial(n)}</div>
+                <span style="font-size:13px;font-weight:600;color:var(--g)">${escHTML(n)}</span>
                 <span style="font-size:11px;color:var(--g)">✅ Accepté</span>
               </div>`;
             }
             return `<div class="fx gap6" style="background:var(--wh);border:1.5px solid var(--bdr);border-radius:20px;padding:4px 12px 4px 8px">
-              <div class="av av-sm" style="width:24px;height:24px;font-size:12px;border-radius:6px">${n[0].toUpperCase()}</div>
-              <span style="font-size:13px;font-weight:600">${n}</span>
+              <div class="av av-sm" style="width:24px;height:24px;font-size:12px;border-radius:6px">${initial(n)}</div>
+              <span style="font-size:13px;font-weight:600">${escHTML(n)}</span>
               ${j.sf
-                ? `<button class="btn btn-sm" style="background:var(--goldp);color:var(--gold);border:1px solid var(--gold);font-size:11px;padding:2px 8px;border-radius:10px" onclick="acceptCandidate('${n.replace(/'/g,"\\'")}',${j.id})">💳 Accepter (paiement requis)</button>`
-                : `<button class="btn btn-sm" style="background:var(--gp);color:var(--g);border:none;font-size:11px;padding:2px 8px;border-radius:10px" onclick="acceptCandidate('${n.replace(/'/g,"\\'")}',${j.id})">✓ Accepter</button>`
+                ? `<button class="btn btn-sm" style="background:var(--goldp);color:var(--gold);border:1px solid var(--gold);font-size:11px;padding:2px 8px;border-radius:10px" onclick="acceptCandidate('${escAttrJS(n)}',${j.id})">💳 Accepter (paiement requis)</button>`
+                : `<button class="btn btn-sm" style="background:var(--gp);color:var(--g);border:none;font-size:11px;padding:2px 8px;border-radius:10px" onclick="acceptCandidate('${escAttrJS(n)}',${j.id})">✓ Accepter</button>`
               }
             </div>`;
           }).join('')}
@@ -3139,14 +3251,14 @@ function renderDashOffs(myJ) {
       <div class="fx jcb wrap gap12">
         <div>
           <div class="fx gap8 wrap mb8">
-            <span class="serif fw7" style="font-size:16px">${j.title}</span>
+            <span class="serif fw7" style="font-size:16px">${escHTML(j.title)}</span>
             ${j.urgent  ? '<span class="badge badge-red">🔥 Urgent</span>' : ''}
             ${j.premium ? '<span class="ftag">⭐ Mise en avant</span>' : ''}
             ${j.sf      ? '<span class="badge badge-g">🤝 Au succès</span>' : ''}
             ${j.waEnabled ? '<span class="badge badge-wa">💬 WA</span>' : ''}
           </div>
-          <div class="tg sm">📍 ${j.city} · ${j.type} · ${j.salary || 'À négocier'} · ${j.posted}</div>
-          <div class="fx gap6 wrap mt8">${j.skills.map(s=>`<span class="badge badge-g">${s}</span>`).join('')}</div>
+          <div class="tg sm">📍 ${escHTML(j.city)} · ${escHTML(formatJobType(j))} · ${escHTML(j.salary || 'À négocier')} · ${escHTML(j.posted)}</div>
+          <div class="fx gap6 wrap mt8">${j.skills.map(s=>`<span class="badge badge-g">${escHTML(s)}</span>`).join('')}</div>
         </div>
         <div class="fx gap12" style="align-items:center">
           <div class="tc">
@@ -3179,17 +3291,17 @@ function renderDashTal() {
       <div class="gc">${acceptedCands.map(c => `
         <div class="card" style="border-color:var(--g);background:var(--wh)">
           <div class="fx gap12 mb10">
-            <div class="av av-sm" style="background:var(--g);color:#fff">${c.name[0].toUpperCase()}</div>
+            <div class="av av-sm" style="background:var(--g);color:#fff">${initial(c.name)}</div>
             <div>
-              <div class="fw7" style="font-size:14px">${c.name}${c.verified ? ' <span style="color:var(--g);font-size:12px">✅</span>' : ''}</div>
-              <div class="xs tg">${c.sector} · ${c.city}</div>
+              <div class="fw7" style="font-size:14px">${escHTML(c.name)}${c.verified ? ' <span style="color:var(--g);font-size:12px">✅</span>' : ''}</div>
+              <div class="xs tg">${escHTML(c.sector)} · ${escHTML(c.city)}</div>
             </div>
           </div>
           ${c.score > 0 ? `<div class="sbox" style="padding:7px 12px;margin-bottom:8px"><span class="xs fw6" style="color:var(--mid)">Score</span><span class="serif fw7" style="font-size:18px;color:var(--g)">${c.score}/100</span></div>` : ''}
-          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${c.skills.slice(0,3).map(s => `<span class="badge badge-g" style="font-size:11px">${s}</span>`).join('')}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${c.skills.slice(0,3).map(s => `<span class="badge badge-g" style="font-size:11px">${escHTML(s)}</span>`).join('')}</div>
           <div class="fx gap6 wrap">
-            <button class="btn btn-wa btn-sm" onclick="doContact(${c.id},'whatsapp','${c.name.replace(/'/g,"\'")}')">💬 WhatsApp</button>
-            <button class="btn btn-outline btn-sm" onclick="doContact(${c.id},'email','${c.name.replace(/'/g,"\'")}')">✉ Email</button>
+            <button class="btn btn-wa btn-sm" onclick="doContact(${c.id},'whatsapp','${escAttrJS(c.name)}')">💬 WhatsApp</button>
+            <button class="btn btn-outline btn-sm" onclick="doContact(${c.id},'email','${escAttrJS(c.name)}')">✉ Email</button>
           </div>
         </div>`).join('')}</div>
     </div>` : '';
@@ -3203,28 +3315,28 @@ function renderDashTal() {
       const st = '★'.repeat(c.rating) + '☆'.repeat(5 - c.rating);
       if (lk) return `
         <div class="card tc" style="min-height:180px">
-          <div class="av av-sm" style="margin:0 auto 10px;filter:blur(3px)">${c.name[0].toUpperCase()}</div>
+          <div class="av av-sm" style="margin:0 auto 10px;filter:blur(3px)">${initial(c.name)}</div>
           <div style="font-size:28px;margin-bottom:8px">🔒</div>
           <div class="fw7 sm mb4">Profil TOP verrouillé</div>
           <div class="xs tg mb12">Score ≥ 80 · Contact direct</div>
-          <button class="btn btn-pur btn-sm btn-w" onclick="unlockProf(${c.id},'${c.name.replace(/'/g,"\\'")}')">🔓 10 000 FCFA</button>
+          <button class="btn btn-pur btn-sm btn-w" onclick="unlockProf(${c.id},'${escAttrJS(c.name)}')">🔓 10 000 FCFA</button>
         </div>`;
       return `
       <div class="card">
         <div class="fx gap12 mb10">
-          <div class="av av-sm">${c.name[0].toUpperCase()}</div>
+          <div class="av av-sm">${initial(c.name)}</div>
           <div>
-            <div class="fw7" style="font-size:14px">${c.name}${c.verified?' <span style="color:var(--g);font-size:12px">✅</span>':''}${c.isTop?' <span class="badge badge-pur" style="font-size:10px">✦</span>':''}</div>
-            <div class="xs tg">${c.sector} · ${c.city}</div>
+            <div class="fw7" style="font-size:14px">${escHTML(c.name)}${c.verified?' <span style="color:var(--g);font-size:12px">✅</span>':''}${c.isTop?' <span class="badge badge-pur" style="font-size:10px">✦</span>':''}</div>
+            <div class="xs tg">${escHTML(c.sector)} · ${escHTML(c.city)}</div>
             
           </div>
         </div>
         ${c.score > 0 ? `<div class="sbox" style="padding:7px 12px;margin-bottom:8px"><span class="xs fw6" style="color:var(--mid)">Score</span><span class="serif fw7" style="font-size:18px;color:var(--g)">${c.score}/100</span></div>` : ''}
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${c.skills.slice(0,3).map(s=>`<span class="badge badge-g" style="font-size:11px">${s}</span>`).join('')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${c.skills.slice(0,3).map(s=>`<span class="badge badge-g" style="font-size:11px">${escHTML(s)}</span>`).join('')}</div>
         <div class="fx gap6 wrap">
-          <button class="btn btn-wa btn-sm" onclick="doContact(${c.id},'whatsapp','${c.name.replace(/'/g,"\\'")}')">💬</button>
-          <button class="btn btn-outline btn-sm" onclick="doContact(${c.id},'email','${c.name.replace(/'/g,"\\'")}')">✉</button>
-          <button class="btn btn-ghost btn-sm" onclick="doContact(${c.id},'call','${c.name.replace(/'/g,"\\'")}')">📞</button>
+          <button class="btn btn-wa btn-sm" onclick="doContact(${c.id},'whatsapp','${escAttrJS(c.name)}')">💬</button>
+          <button class="btn btn-outline btn-sm" onclick="doContact(${c.id},'email','${escAttrJS(c.name)}')">✉</button>
+          <button class="btn btn-ghost btn-sm" onclick="doContact(${c.id},'call','${escAttrJS(c.name)}')">📞</button>
         </div>
       </div>`;
     }).join('')}</div>`;
@@ -3232,6 +3344,7 @@ function renderDashTal() {
 
 function renderDashBil() {
   const el = $('dash-bil'), isPrem = CU?.isPremium;
+  const myTxns = getUserTxns();
   el.innerHTML = `
     <div class="g2 mb20">
       <div class="card ${isPrem ? '' : ''}" style="${isPrem ? 'border-color:var(--pur);background:var(--purp)' : ''}">
@@ -3272,7 +3385,7 @@ function renderDashBil() {
     <!-- Historique -->
     <div class="card">
       <div class="fw7 mb16" style="font-size:16px">📊 Historique des transactions</div>
-      ${TXNS.length ? `
+      ${myTxns.length ? `
         <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:480px">
           <thead><tr style="border-bottom:2px solid var(--bdr)">
@@ -3283,11 +3396,11 @@ function renderDashBil() {
             <th style="padding:8px 0;text-align:right;color:var(--mid);font-weight:600">Statut</th>
           </tr></thead>
           <tbody>
-            ${TXNS.map(t => `<tr style="border-bottom:1px solid var(--bdr)">
+            ${myTxns.map(t => `<tr style="border-bottom:1px solid var(--bdr)">
               <td style="padding:10px 0;color:var(--gr)">${t.date}</td>
               <td style="padding:10px 8px;font-weight:600">${t.type}</td>
               <td style="padding:10px 8px;color:var(--gr)">${t.name}</td>
-              <td style="padding:10px 0;text-align:right;font-weight:700">${parseInt(t.amount.replace(/\D/g,'')||0).toLocaleString('fr-FR')}</td>
+              <td style="padding:10px 0;text-align:right;font-weight:700">${parseInt(String(t.amount).replace(/\D/g,'')||0).toLocaleString('fr-FR')}</td>
               <td style="padding:10px 0;text-align:right"><span class="badge badge-g">${t.status}</span></td>
             </tr>`).join('')}
           </tbody>
@@ -3315,7 +3428,7 @@ function acceptCandidate(name, jobId) {
         if (cand) unlocked.add(cand.id);
         if (!job.accepted) job.accepted = [];
         job.accepted.push(name);
-        TXNS.push({ date: nd(), type: 'Commission recrutement', name, amount: comm, status: 'Payé' });
+        addTxn({ date: nd(), type: 'Commission recrutement', name, amount: comm, status: 'Payé' });
         toast('✅ Paiement confirmé ! ' + name + ' est maintenant débloqué dans votre dashboard.', 'info');
         saveAll();
         initDash();
@@ -3327,7 +3440,7 @@ function acceptCandidate(name, jobId) {
     if (cand) unlocked.add(cand.id);
     if (!job.accepted) job.accepted = [];
     job.accepted.push(name);
-    TXNS.push({ date: nd(), type: 'Candidature acceptée', name, amount: '—', status: 'Validée' });
+    addTxn({ date: nd(), type: 'Candidature acceptée', name, amount: '—', status: 'Validée' });
     toast('✅ ' + name + ' accepté(e) ! Profil débloqué dans votre dashboard.');
     saveAll();
     initDash();
@@ -3338,7 +3451,7 @@ function decRecruit(name, jobId) {
   const job = JOBS.find(j => j.id === jobId);
   const comm = job?.salN ? Math.round(job.salN * 0.05).toLocaleString('fr-FR') + ' FCFA (5%)' : '50 000 FCFA (forfait)';
   pay('sf_' + jobId, 'Recrutement réussi — ' + name, comm, () => {
-    TXNS.push({ date: nd(), type: 'Commission recrutement', name, amount: comm, status: 'Payé' });
+    addTxn({ date: nd(), type: 'Commission recrutement', name, amount: comm, status: 'Payé' });
     toast('✅ Recrutement de ' + name + ' déclaré ! Commission enregistrée.');
     saveAll();
     initDash();
@@ -3651,7 +3764,7 @@ function onCinetPaySuccess(txRef) {
 
   // Enregistrer la transaction
   const amount = window._cpAmount || 0;
-  TXNS.push({ date: nd(), type: 'Paiement EncashPay', name: type, amount: amount.toLocaleString('fr-FR'), status: 'Payé', ref: txRef });
+  addTxn({ date: nd(), type: 'Paiement EncashPay', name: type, amount: amount.toLocaleString('fr-FR'), status: 'Payé', ref: txRef });
 
   // Exécuter la logique métier selon le type
   if (type.startsWith('sub_')) {
@@ -3659,39 +3772,27 @@ function onCinetPaySuccess(txRef) {
     if (type.startsWith('sub_unlock_')) {
       const uid = parseInt(type.replace('sub_unlock_',''));
       if (!isNaN(uid)) unlocked.add(uid);
-      TXNS.push({ date: nd(), type: 'Premium activé', name: CU?.name||'—', amount: '25 000', status: 'Payé' });
+      addTxn({ date: nd(), type: 'Premium activé', name: CU?.name||'—', amount: '25 000', status: 'Payé' });
       toast('✦ Premium activé ! Badge ✓ · Talent débloqué ✓', 'info');
       if (cb) cb(); else { renderCands(); G('candidates'); }
     } else {
-      TXNS.push({ date: nd(), type: 'Premium activé', name: CU?.name||'—', amount: '25 000', status: 'Payé' });
+      addTxn({ date: nd(), type: 'Premium activé', name: CU?.name||'—', amount: '25 000', status: 'Payé' });
       if (cb) cb(); else showFreeUnlockModal();
     }
   } else if (type === 'cv_premium') {
     if (CU) { CU.isPremium = true; updateNav(); saveAll(); }
-    TXNS.push({ date: nd(), type: 'CV Premium', name: CU?.name||'—', amount: '3 000', status: 'Payé' });
+    addTxn({ date: nd(), type: 'CV Premium', name: CU?.name||'—', amount: '3 000', status: 'Payé' });
     toast('✦ CV Premium activé !', 'info');
     if (cb) cb();
   } else if (type.startsWith('unlock_')) {
     const cid = parseInt(type.replace('unlock_',''));
     unlocked.add(cid); saveAll();
-    TXNS.push({ date: nd(), type: 'Déblocage talent', name: type, amount: '10 000', status: 'Payé' });
+    addTxn({ date: nd(), type: 'Déblocage talent', name: type, amount: '10 000', status: 'Payé' });
     if (cb) cb(); else { renderCands(); toast('✅ Talent débloqué !'); }
   } else {
     if (cb) cb(); else toast('✅ Paiement confirmé avec succès !');
   }
-}
-
-function showCpStatus(kind, msg) {
-  const el = $('cp-status');
-  if (!el) return;
-  el.style.display = 'block';
-  const styles = {
-    ok:   'background:var(--gp);border:1.5px solid var(--g);color:var(--g)',
-    err:  'background:var(--redp);border:1.5px solid var(--red);color:var(--red)',
-    info: 'background:#EFF6FF;border:1.5px solid #3B82F6;color:#1D4ED8'
-  };
-  el.style.cssText += ';' + (styles[kind] || styles.info);
-  el.innerHTML = msg;
+  saveAll();
 }
 
 function closeModal() {
@@ -3717,10 +3818,10 @@ function showFreeUnlockModal() {
            style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;
                   border:2px solid var(--bdr);background:var(--wh);cursor:pointer;margin-bottom:8px;transition:.2s"
            class="free-unlock-opt">
-        <div class="av av-sm">${c.name[0].toUpperCase()}</div>
+        <div class="av av-sm">${initial(c.name)}</div>
         <div style="flex:1">
-          <div class="fw7 sm">${c.name}</div>
-          <div class="xs tg">📍 ${c.city} · ${c.sector} · Score ${c.score}/100</div>
+          <div class="fw7 sm">${escHTML(c.name)}</div>
+          <div class="xs tg">📍 ${escHTML(c.city)} · ${escHTML(c.sector)} · Score ${c.score}/100</div>
         </div>
         <input type="radio" name="free-unlock" value="${c.id}"
                style="width:17px;height:17px;accent-color:var(--g)"/>
@@ -3765,7 +3866,7 @@ function confirmFreeUnlock() {
   const cand = CANDS.find(c => c.id === id);
   unlocked.add(id);
     saveAll();
-  TXNS.push({ date: nd(), type: 'Talent gratuit Premium', name: cand?.name || '—', amount: '0', status: 'Offert' });
+  addTxn({ date: nd(), type: 'Talent gratuit Premium', name: cand?.name || '—', amount: '0', status: 'Offert' });
   closeModal();
   renderCands();
   G('candidates');
@@ -3776,6 +3877,41 @@ function confirmFreeUnlock() {
 function $(id)  { return document.getElementById(id); }
 function v(id)  { const el = $(id); return el ? el.value : ''; }
 function nd()   { return new Date().toLocaleDateString('fr-FR'); }
+function escHTML(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function initial(str) {
+  const ch = String(str || '?').trim().charAt(0) || '?';
+  return escHTML(ch.toUpperCase());
+}
+function escAttrJS(str) {
+  // Texte utilisateur injecté dans onclick="... 'ICI' ..." :
+  // protège à la fois l'attribut HTML et la chaîne JavaScript.
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/[\r\n]+/g, ' ');
+}
+
+function addTxn(tx) {
+  // Chaque transaction appartient au compte connecté : évite que les entreprises
+  // voient la facturation des autres comptes sur le dashboard.
+  TXNS.push({ ...tx, owner: tx.owner || (CU?.email || '') });
+}
+function getUserTxns() {
+  const email = (CU?.email || '').toLowerCase();
+  if (!email) return [];
+  return TXNS.filter(t => String(t.owner || '').toLowerCase() === email);
+}
 
 let _tt;
 function toast(msg, type = 'ok') {
@@ -4254,8 +4390,24 @@ function showResults() {
 
   $('quiz-results').classList.remove('hidden');
 
-  // Stocker le score sur le profil
-  if (CU) { CU.quizScore = pct; CU.quizSector = CU.sector; saveAll(); }
+  // Stocker immédiatement le score sur le profil et la fiche candidat :
+  // même si l'utilisateur recharge la page avant de cliquer sur "Sauvegarder et fermer",
+  // le score du test reste conservé.
+  if (CU) {
+    CU.quizScore = pct;
+    CU.quizSector = CU.sector;
+    const idx = CANDS.findIndex(c => c.email === CU.email);
+    if (idx >= 0) {
+      CANDS[idx].score = pct;
+      CANDS[idx].isTop = pct >= 80;
+      if (pct >= 80) {
+        if (!CANDS[idx].badges) CANDS[idx].badges = [];
+        const badge = '✦ Score TOP ' + pct + '/100';
+        if (!CANDS[idx].badges.includes(badge)) CANDS[idx].badges.push(badge);
+      }
+    }
+    saveAll();
+  }
 }
 
 function finishQuiz() {
@@ -4298,9 +4450,14 @@ function finishQuiz() {
   if (idx >= 0) {
     CANDS[idx].score = pct;
     CANDS[idx].isTop = pct >= 80;
-    if (pct >= 80 && !CANDS[idx].badges) CANDS[idx].badges = [];
-    if (pct >= 80) CANDS[idx].badges.push('✦ Score TOP ' + pct + '/100');
+    if (pct >= 80) {
+      if (!CANDS[idx].badges) CANDS[idx].badges = [];
+      const badge = '✦ Score TOP ' + pct + '/100';
+      if (!CANDS[idx].badges.includes(badge)) CANDS[idx].badges.push(badge);
+    }
   }
+  saveAll();
+  initCV();
   toast('🏆 Score ' + pct + '/100 enregistré ! Complétez maintenant votre CV.', 'info');
 }
 
@@ -4754,7 +4911,11 @@ window.addEventListener('load', () => setTimeout(refreshCurrentPageView, 100));
 
 
 
-/* ══════════ VÉRIFICATION WHATSAPP RÉELLE ══════════ */
+/* ══════════ VÉRIFICATION WHATSAPP RÉELLE ══════════
+   FLUX INVERSÉ : c'est SilverCAM qui envoie le code de vérification
+   au candidat sur SON WhatsApp. Le candidat reçoit le message,
+   lit le code, puis le saisit sur le site pour confirmer son numéro.
+   ══════════════════════════════════════════════════ */
 let _waVerifCode = '';
 
 function sendWhatsAppVerifCode() {
@@ -4765,20 +4926,37 @@ function sendWhatsAppVerifCode() {
     return;
   }
 
-  // Générer un code à 4 chiffres aléatoire
+  // Générer un code à 4 chiffres aléatoire (envoyé au candidat)
   _waVerifCode = String(Math.floor(1000 + Math.random() * 9000));
-  
-  toast('📱 Redirection vers WhatsApp pour l\'envoi du code...', 'wa');
 
-  // Ouvrir WhatsApp vers votre numéro d'assistance 657460974
-  const msg = encodeURIComponent(`Bonjour SilverCAM, je souhaite vérifier mon numéro WhatsApp pour mon inscription. Voici mon code de validation unique : *${_waVerifCode}*`);
-  window.open(`https://wa.me/237657460974?text=${msg}`, '_blank');
+  // Construire le numéro destinataire au format international (237XXXXXXXXX)
+  const digits = String(clean).replace(/\D/g, '');
+  const intl = digits.length === 9 ? '237' + digits
+              : digits.startsWith('237') ? digits
+              : digits;
+
+  toast('📱 Envoi du code de vérification sur votre WhatsApp...', 'wa');
+
+  // Message envoyé AU candidat sur SON WhatsApp (il reçoit le code)
+  const msg = encodeURIComponent(
+    `Bonjour, SilverCAM 👋\n\nVoici votre code de vérification WhatsApp : *${_waVerifCode}*\n\n` +
+    `Saisissez ce code à 4 chiffres sur la page d'inscription SilverCAM pour confirmer votre numéro.\n\n` +
+    `⚠️ Ne partagez jamais ce code. L'équipe SilverCAM ne vous le demandera jamais.`
+  );
+  // Ouvre WhatsApp directement vers le numéro du candidat — il reçoit le message
+  window.open(`https://wa.me/${intl}?text=${msg}`, '_blank');
 
   // Afficher la boîte de saisie du code sur le site
   $('rwa-code-block').classList.remove('hidden');
   $('btn-send-wa-code').disabled = true;
+  $('btn-send-wa-code').textContent = 'Code envoyé ✓';
   $('rwa').disabled = true;
   setTimeout(() => $('rwa-code')?.focus(), 200);
+
+  // Petit rappel visuel
+  setTimeout(() => {
+    toast('✅ Code envoyé sur votre WhatsApp ' + clean + '. Vérifiez vos messages.', 'wa');
+  }, 1200);
 }
 
 function confirmWhatsAppCode() {
@@ -4793,6 +4971,5 @@ function confirmWhatsAppCode() {
 }
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01bcb3ccd208eb4',t:'MTc3OTc4ODE2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01eae49de727e86',t:'MTc3OTgxODQ0MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a02ee9ee5d612b0b',t:'MTc3OTk4ODY1Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a035c9b68cc094b1',t:'MTc4MDA2MDczNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
